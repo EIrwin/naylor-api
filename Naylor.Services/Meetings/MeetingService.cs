@@ -45,6 +45,7 @@ namespace Naylor.Services.Meetings
                         {
                             Meeting = meeting
                         });
+
                 }
 
                 return await Task.FromResult(meeting);
@@ -62,7 +63,7 @@ namespace Naylor.Services.Meetings
             try
             {
                 var meeting = _meetingRepository.AsQueryable().FirstOrDefault(p => p.Id == startMeeting.MeetingId);
-                meeting.StartUtc = DateTime.Now.ToUniversalTime();
+                meeting.StartUtc = DateTime.UtcNow;
                 meeting.Active = true;
                 meeting = _meetingRepository.Save(meeting);
                 return await Task.FromResult(meeting);

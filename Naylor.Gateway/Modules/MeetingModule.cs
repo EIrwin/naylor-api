@@ -1,4 +1,6 @@
-﻿using Nancy;
+﻿using System;
+using System.Linq;
+using Nancy;
 using Nancy.ModelBinding;
 using Naylor.Gateway.Models;
 using Naylor.Services;
@@ -18,7 +20,21 @@ namespace Naylor.Gateway.Modules
                             Id = request.Id
                         });
 
-                    return Response.AsJson(meeting);
+                    var utcNow = DateTime.UtcNow;
+                    var response = new
+                        {
+                            id = meeting.Id,
+                            startUtc = meeting.StartUtc,
+                            endUtc = meeting.EndUtc,
+                            total = meeting.Total,
+                            active = meeting.Active,
+                            attendees = meeting.Attendees.Select(p => p.Id),
+                            elapsedSeconds = GetElapsedSeconds(meeting.StartUtc,utcNow),
+                            elapsedMinutes = GetElapsedMinutes(meeting.StartUtc,utcNow),
+                            elapsedHours = GetElapsedHours(meeting.StartUtc,utcNow)
+                        };
+
+                    return Response.AsJson(response);
                 };
 
             Post["/", true] = async (ctx, cancel) =>
@@ -81,6 +97,24 @@ namespace Naylor.Gateway.Modules
                     return Response.AsJson(meeting);
                 };
 
+        }
+
+        private double GetElapsedMinutes(DateTime startUtc,DateTime nowUtc)
+        {
+            TimeSpan diff = nowUtc - startUtc;
+            return diff.TotalMinutes;
+        }
+
+        private double GetElapsedHours(DateTime startUtc,DateTime nowUtc)
+        {
+            TimeSpan diff = nowUtc - startUtc;
+            return diff.TotalHours;
+        }
+
+        private double GetElapsedSeconds(DateTime startUtc,DateTime nowUtc)
+        {
+            TimeSpan diff = nowUtc - startUtc;
+            return diff.TotalSeconds;
         }
     }
 }
